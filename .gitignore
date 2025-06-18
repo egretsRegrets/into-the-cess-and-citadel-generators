@@ -1,3 +1,6 @@
+# Copyright protected material in JSON files from the book
+copyright/
+
 # Logs
 logs
 *.log
