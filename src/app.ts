@@ -1,11 +1,11 @@
 import * as fs from "node:fs/promises";
 import path, { dirname } from "node:path";
 import { fileURLToPath } from "node:url";
-import roll from "./roll.js";
+import roll from "./roll";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
-const __copyright = path.join(__dirname, "copyright");
+const __copyright = path.join(__dirname, "../copyright");
 
 const genNpc = async () => {
   const npcFile = path.join(__copyright, "npc.json");
@@ -22,7 +22,7 @@ const genNpc = async () => {
     function getAppearance(detailRoll) {
       const { appearance } = npcDetails[detailRoll];
       if (appearance.toLocaleLowerCase().includes("roll again twice")) {
-        return getAppearance(roll.d20());
+        return getAppearance(roll.d20()[0]);
       }
       return appearance;
     }
@@ -30,7 +30,7 @@ const genNpc = async () => {
     function getManners(detailRoll) {
       const { manners } = npcDetails[detailRoll];
       if (manners.toLocaleLowerCase().includes("roll again twice")) {
-        return getManners(roll.d20());
+        return getManners(roll.d20()[0]);
       }
       return manners;
     }
@@ -53,8 +53,8 @@ const genStreet = async () => {
     const streetContent = await fs.readFile(streetFile, { encoding: "utf-8" });
     const { namePrefix, nameSuffix, description } = JSON.parse(streetContent);
     return {
-      name: `${namePrefix[roll.d50()]} ${nameSuffix[roll.d20()]}`,
-      description: description[roll.d66()],
+      name: `${namePrefix[roll.d50()[0]]} ${nameSuffix[roll.d20()[0]]}`,
+      description: description[roll.d66()[0]],
     };
   } catch (err) {
     console.error(err);

@@ -5,8 +5,9 @@
   "main": "app.js",
   "type": "module",
   "scripts": {
-    "start": "node app.js",
-    "dev": "node --watch app.js"
+    "start": "node ./dist/app.js",
+    "compile": "tsc && tsc-alias",
+    "dev": "tsc && (tsc -w & tsc-alias -w) & node --watch ./dist/app.js"
   },
   "repository": {
     "type": "git",
@@ -18,5 +19,10 @@
   "bugs": {
     "url": "https://github.com/egretsRegrets/into-the-cess-and-citadel-generators/issues"
   },
-  "homepage": "https://github.com/egretsRegrets/into-the-cess-and-citadel-generators#readme"
+  "homepage": "https://github.com/egretsRegrets/into-the-cess-and-citadel-generators#readme",
+  "devDependencies": {
+    "@types/node": "^24.0.3",
+    "tsc-alias": "^1.8.16",
+    "typescript": "^5.8.3"
+  }
 }

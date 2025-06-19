@@ -2,6 +2,9 @@
 copyright/
 book-to-json/
 
+# Notes
+todo.txt
+
 # Logs
 logs
 *.log

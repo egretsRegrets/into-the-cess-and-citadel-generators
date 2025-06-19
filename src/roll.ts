@@ -5,11 +5,11 @@ function randomSeed() {
   return crypto.getRandomValues(buffer)[0] / 2 ** 32;
 }
 
-function rollDiceBySides(diceSides) {
+function rollDiceBySides(diceSides: number) {
   // min an dmax assume that we will always be using the result to do 0-based index lookups
   const min = 0;
   const max = diceSides - 1;
-  const roll =
+  const roll: number =
     (Math.floor(Math.pow(10, 14) * randomSeed() * randomSeed()) %
       (max - min + 1)) +
     min;
@@ -21,8 +21,8 @@ function rollDiceBySides(diceSides) {
   return roll;
 }
 
-function rollDice(numDice = 1, diceSides) {
-  let rolls = [];
+function rollDice(numDice = 1, diceSides: number) {
+  let rolls: number[] = [];
   for (let i = 0; i < numDice; i++) {
     rolls.push(rollDiceBySides(diceSides));
   }
@@ -30,7 +30,7 @@ function rollDice(numDice = 1, diceSides) {
 }
 
 export default {
-  d20: (numDice) => rollDice(numDice, 20),
-  d50: (numDice) => rollDice(numDice, 50),
-  d66: (numDice) => rollDice(numDice, 36),
+  d20: (numDice?: number) => rollDice(numDice, 20),
+  d50: (numDice?: number) => rollDice(numDice, 50),
+  d66: (numDice?: number) => rollDice(numDice, 36),
 };
