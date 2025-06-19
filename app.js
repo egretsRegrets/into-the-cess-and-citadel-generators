@@ -15,12 +15,12 @@ const genNpc = async () => {
 
     const [nameProfessionRoll, detailRoll] = roll.d20(2);
 
-    const { name, profession } = npcNameProfession[nameProfessionRoll - 1];
-    const { quirk } = npcDetails[detailRoll - 1];
+    const { name, profession } = npcNameProfession[nameProfessionRoll];
+    const { quirk } = npcDetails[detailRoll];
 
     // appearance and manners have roll again results, so recursive methods to get these
     function getAppearance(detailRoll) {
-      const { appearance } = npcDetails[detailRoll - 1];
+      const { appearance } = npcDetails[detailRoll];
       if (appearance.toLocaleLowerCase().includes("roll again twice")) {
         return getAppearance(roll.d20());
       }
@@ -28,7 +28,7 @@ const genNpc = async () => {
     }
 
     function getManners(detailRoll) {
-      const { manners } = npcDetails[detailRoll - 1];
+      const { manners } = npcDetails[detailRoll];
       if (manners.toLocaleLowerCase().includes("roll again twice")) {
         return getManners(roll.d20());
       }
@@ -47,6 +47,22 @@ const genNpc = async () => {
   }
 };
 
-const npc = await genNpc();
+const genStreet = async () => {
+  const streetFile = path.join(__copyright, "street.json");
+  try {
+    const streetContent = await fs.readFile(streetFile, { encoding: "utf-8" });
+    const { namePrefix, nameSuffix, description } = JSON.parse(streetContent);
+    return {
+      name: `${namePrefix[roll.d50()]} ${nameSuffix[roll.d20()]}`,
+      description: description[roll.d66()],
+    };
+  } catch (err) {
+    console.error(err);
+  }
+};
 
-console.log(npc);
+const npc = await genNpc();
+const street = await genStreet();
+
+console.log("npc:", npc);
+console.log("street:", street);
