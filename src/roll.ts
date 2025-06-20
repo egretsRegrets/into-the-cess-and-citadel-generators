@@ -1,11 +1,11 @@
 // randomization pinched from https://github.com/3d-dice/dice-box/blob/main/src/helpers/index.js
 
-function randomSeed() {
+function randomSeed(): number {
   const buffer = new Uint32Array(1);
   return crypto.getRandomValues(buffer)[0] / 2 ** 32;
 }
 
-function rollDiceBySides(diceSides: number) {
+function rollDiceBySides(diceSides: number): number {
   // min an dmax assume that we will always be using the result to do 0-based index lookups
   const min = 0;
   const max = diceSides - 1;
@@ -21,7 +21,7 @@ function rollDiceBySides(diceSides: number) {
   return roll;
 }
 
-function rollDice(numDice = 1, diceSides: number) {
+function rollDice(numDice = 1, diceSides: number): number[] {
   let rolls: number[] = [];
   for (let i = 0; i < numDice; i++) {
     rolls.push(rollDiceBySides(diceSides));
@@ -30,7 +30,10 @@ function rollDice(numDice = 1, diceSides: number) {
 }
 
 export default {
-  d20: (numDice?: number) => rollDice(numDice, 20),
-  d50: (numDice?: number) => rollDice(numDice, 50),
-  d66: (numDice?: number) => rollDice(numDice, 36),
+  d2: (numDice?: number): number[] => rollDice(numDice, 2),
+  d3: (numDice?: number): number[] => rollDice(numDice, 3),
+  d6: (numDice?: number): number[] => rollDice(numDice, 6),
+  d20: (numDice?: number): number[] => rollDice(numDice, 20),
+  d50: (numDice?: number): number[] => rollDice(numDice, 50),
+  d66: (numDice?: number): number[] => rollDice(numDice, 36),
 };

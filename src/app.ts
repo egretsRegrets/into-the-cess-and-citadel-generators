@@ -2,6 +2,7 @@ import * as fs from "node:fs/promises";
 import path, { dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import roll from "./roll";
+import {genBuilding} from "./building";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -11,7 +12,7 @@ const genNpc = async () => {
   const npcFile = path.join(__copyright, "npc.json");
   try {
     const npcContents = await fs.readFile(npcFile, { encoding: "utf8" });
-    const { npcNameProfession, npcDetails } = JSON.parse(npcContents);
+    const { npcNameProfession, npcDetails }: { npcNameProfession: NpcNameProfession[], npcDetails: any[] } = JSON.parse(npcContents);
 
     const [nameProfessionRoll, detailRoll] = roll.d20(2);
 
@@ -63,6 +64,8 @@ const genStreet = async () => {
 
 const npc = await genNpc();
 const street = await genStreet();
+const building = await genBuilding();
 
 console.log("npc:", npc);
 console.log("street:", street);
+console.log("building: ", building)
