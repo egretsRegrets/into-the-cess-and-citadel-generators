@@ -15,7 +15,7 @@ function rollDiceBySides(diceSides: number): number {
     min;
   if (roll > max || roll < min) {
     throw new Error(
-      `Something is wrong with the math ih rollDiceBySides, expected that a roll on a dice with ${diceSides} sides (adjusted for 0-based index lookup), should never exceed ${max} or fall below ${min}, but the roll was ${roll}`
+      `Something is wrong with the math ih rollDiceBySides, expected that a roll on a dice with ${diceSides} sides (adjusted for 0-based index lookup), should never exceed ${max} or fall below ${min}, but the roll was ${roll}`,
     );
   }
   return roll;

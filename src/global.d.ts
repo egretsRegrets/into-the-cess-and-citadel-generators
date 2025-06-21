@@ -1,4 +1,3 @@
-
 // npc
 interface NpcNameProfession {
   name: string;
@@ -7,12 +6,17 @@ interface NpcNameProfession {
 
 // building
 interface Room {
-  category: string,
-  categoryDescription: string,
-  room: string,
-  roomDescription: string
+  category: string;
+  categoryDescription: string;
+  room: string;
+  roomDescription: string;
 }
 
 interface Building {
-  rooms: Room[]
+  rooms: Room[];
+  floorplan: Array<Array<null | number>>;
+  secondFloor?: {
+    rooms: Room[];
+    floorplan: Array<Array<null | number>>;
+  };
 }
