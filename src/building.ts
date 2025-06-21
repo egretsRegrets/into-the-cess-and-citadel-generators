@@ -43,28 +43,73 @@ export const genBuilding = async (
   const { roomCategories }: { roomCategories: RoomCategory[] } =
     JSON.parse(buildingContents);
 
-  function rollResultToRoom(rollResult: number) {
-    const roomCategory = roomCategories[rollResult];
-    const room =
-      roomCategory.rooms.length === 3
-        ? roomCategory.rooms[roll.d3()[0]]
-        : roomCategory.rooms[roll.d2()[0]];
-    return {
-      category: roomCategory.category,
-      categoryDescription: roomCategory.description,
-      room: room.name,
-      roomDescription: room.description,
-    };
+  // gettting the rooms is made complicated by an attempt to limit repeat reooms, currently this is not done between floors
+  function getRoomsFromRollResults(rollResults: number[]) {
+    const rooms: {
+      category: string;
+      categoryDescription: string;
+      room: string;
+      roomDescription: string;
+    }[] = [];
+
+    function getUniqueCategory(category: RoomCategory) {
+      if (!rooms.some((room) => room.category === category.category)) {
+        return category;
+      }
+      return getUniqueCategory(roomCategories[roll.d6()[0]]);
+    }
+    function getUniqueRoom(roomName: string, categoryName: string) {
+      const roomCategory = roomCategories.find(
+        (roomCategory) => roomCategory.category === categoryName,
+      );
+      if (!rooms.some((room) => room.room === roomName)) {
+        return roomCategory.rooms.find((room) => room.name === roomName);
+      }
+      return getUniqueRoom(
+        roomCategory.rooms[
+          roomCategory.rooms.length === 3 ? roll.d3()[0] : roll.d2()[0]
+        ].name,
+        categoryName,
+      );
+    }
+
+    rollResults.forEach((rollResult: number) => {
+      let roomCategory: RoomCategory = roomCategories[rollResult];
+      const otherRoomsWithSameCategory = rooms.filter(
+        (existingRoom) => existingRoom.category === roomCategory.category,
+      );
+      if (otherRoomsWithSameCategory.length === roomCategory.rooms.length) {
+        roomCategory = getUniqueCategory(roomCategory);
+      }
+
+      const room = getUniqueRoom(
+        roomCategory.rooms[
+          roomCategory.rooms.length === 3 ? roll.d3()[0] : roll.d2()[0]
+        ].name,
+        roomCategory.category,
+      );
+
+      rooms.push({
+        category: roomCategory.category,
+        categoryDescription: roomCategory.description,
+        room: room.name,
+        roomDescription: room.description,
+      });
+    });
+
+    return rooms;
   }
 
-  const rooms: Room[] = roomCategoryRollResultsFirstFloor.map(rollResultToRoom);
+  const rooms: Room[] = getRoomsFromRollResults(
+    roomCategoryRollResultsFirstFloor,
+  );
 
   let secondFloor = {};
   if (roomCountSecondFloor) {
     const roomCategoryRollResultsSecondFloor = roll.d6(roomCountSecondFloor);
     secondFloor = {
       secondFloor: {
-        rooms: roomCategoryRollResultsSecondFloor.map(rollResultToRoom),
+        rooms: getRoomsFromRollResults(roomCategoryRollResultsSecondFloor),
         floorplan: getFloorPlan(roomCountSecondFloor),
       },
     };

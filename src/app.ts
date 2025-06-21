@@ -77,5 +77,3 @@ console.log(
   "building: ",
   util.inspect(building, { depth: null, colors: true }),
 );
-
-// reload!
