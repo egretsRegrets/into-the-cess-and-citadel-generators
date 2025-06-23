@@ -26,13 +26,19 @@ function getFloorPlan(roomCount: number): Floorplan {
     floorplansForRoomCount[
       getRandomInt(0, Object.values(floorplansForRoomCount).length)
     ];
+  // const floorplan = floorplansForRoomCount[0];
   // const floorplan = floorplansForRoomCount[7];
   return floorplan;
 }
 
-function drawFloorPlan(floorplan: Floorplan): string {
+function drawFloorPlan(
+  floorplan: Floorplan,
+  rooms: Room[],
+  hasStairs: boolean,
+  floor: 1 | 2,
+): string {
   const hWall = `#########`;
-  const noRoomHSpace = `         `;
+  const noRoomHSpace = `        `;
   const vWallSpacer = `        `;
   const door = `D`;
   const hWallWithDoor = `####${door}####`;
@@ -41,6 +47,34 @@ function drawFloorPlan(floorplan: Floorplan): string {
   // #        #
   // #        #
   // ##########
+
+  function getNoRoomSpacer(row: (number | null)[], roomI: number) {
+    // if there's no wall to the left of the current empty space, need to lead with an empty character (space)
+    return row[roomI - 1] === null || roomI === 0
+      ? ` ${noRoomHSpace}`
+      : noRoomHSpace;
+  }
+
+  const roomWithStairs: number | null = hasStairs
+    ? getRandomInt(0, rooms.length)
+    : null;
+
+  function getRoomMeta(rowI: number, roomI: number) {
+    return {
+      roomKey: `${floorplan[rowI][roomI] + 1}`,
+      hasStairs: floorplan[rowI][roomI] === roomWithStairs,
+    };
+  }
+
+  // figure out exterior door placement ahead of drawing, assign exterior doors to a row index and room index
+  // never put exterior door on hidden room
+  // if floorplan contains null rooms, place exterior doors on 1st room that is contiguous with null room
+  // if floorplan does not contain null rooms, place exterior doors on NW corner room and SE corner room hWalls
+  // if an exterior facing room has no exterior door, 1 in 3 chance wall has window
+
+  // remove doors from walls to hidden rooms???
+  // chance of locked doors going into certain kinds of room???
+
   let floorplanDrawing = ``;
   floorplan.forEach((row: (number | null)[], rowI) => {
     let rowDrawing = ``;
@@ -59,7 +93,7 @@ function drawFloorPlan(floorplan: Floorplan): string {
       } else if (hasNorthWall) {
         northWallSegment = hWall;
       } else {
-        northWallSegment = noRoomHSpace;
+        northWallSegment = getNoRoomSpacer(row, roomI);
       }
       const drawNorthWestWallCorner =
         !noRoom && (roomI === 0 || row[roomI - 1] === null);
@@ -68,20 +102,48 @@ function drawFloorPlan(floorplan: Floorplan): string {
         : (rowDrawing = `${rowDrawing}${drawNorthWestWallCorner ? "#" : ""}${northWallSegment}`);
     });
     // east and west walls
-    for (let hWallRow = 0; hWallRow < 3; hWallRow++) {
+    for (let hWallRow = 0; hWallRow < 4; hWallRow++) {
       row.forEach((room, roomI) => {
+        const { roomKey, hasStairs } = getRoomMeta(rowI, roomI);
         const noRoom = room === null;
         const lastRoom = roomI === row.length - 1;
         if (noRoom) {
+          const spacer = getNoRoomSpacer(row, roomI);
+          // const spacer = noRoomHSpace;
           lastRoom
-            ? (rowDrawing = `${rowDrawing}${noRoomHSpace}\n`)
-            : (rowDrawing = `${rowDrawing}${noRoomHSpace}`);
+            ? (rowDrawing = `${rowDrawing}${spacer}\n`)
+            : (rowDrawing = `${rowDrawing}${spacer}`);
         } else {
-          const drawDoor = hWallRow === 1 && typeof row[roomI + 1] === "number";
+          const middleRow = hWallRow === 1;
+          const drawDoor = middleRow && typeof row[roomI + 1] === "number";
           const drawWestWall = roomI === 0 || row[roomI - 1] === null;
+          let spacer;
+          if (middleRow) {
+            spacer = vWallSpacer
+              .substring(0, 3)
+              .concat(roomKey)
+              .concat(vWallSpacer.substring(4));
+          } else if (hasStairs && hWallRow === 2) {
+            // writing UP or DOWN if their is are stairs
+            const stairLegend = floor === 1 ? "UP" : "DOWN";
+            spacer = vWallSpacer
+              .substring(
+                0,
+                Math.floor((vWallSpacer.length - stairLegend.length) / 2),
+              )
+              .concat(stairLegend)
+              .concat(
+                vWallSpacer.substring(
+                  Math.floor((vWallSpacer.length - stairLegend.length) / 2) +
+                    stairLegend.length,
+                ),
+              );
+          } else {
+            spacer = vWallSpacer;
+          }
           lastRoom
-            ? (rowDrawing = `${rowDrawing}${drawWestWall ? "#" : ""}${vWallSpacer}\#\n`)
-            : (rowDrawing = `${rowDrawing}${drawWestWall ? "#" : ""}${vWallSpacer}${drawDoor ? door : "#"}`);
+            ? (rowDrawing = `${rowDrawing}${drawWestWall ? "#" : ""}${spacer}\#\n`)
+            : (rowDrawing = `${rowDrawing}${drawWestWall ? "#" : ""}${spacer}${drawDoor ? door : "#"}`);
         }
       });
     }
@@ -89,14 +151,12 @@ function drawFloorPlan(floorplan: Floorplan): string {
     if (rowI === floorplan.length - 1) {
       row.forEach((room, roomI) => {
         const noRoom = room === null;
-        const southWallSegment = !noRoom ? hWall : noRoomHSpace;
+        const southWallSegment = !noRoom ? hWall : getNoRoomSpacer(row, roomI);
         const drawSouthWestWallCorner =
           (!noRoom && roomI === 0) || (!noRoom && row[roomI - 1] === null);
         rowDrawing = `${rowDrawing}${drawSouthWestWallCorner ? "#" : ""}${southWallSegment}`;
       });
     }
-    // console.log("row drawing: ");
-    // console.log(`${rowDrawing}`);
     floorplanDrawing = `${floorplanDrawing}${rowDrawing}`;
   });
   return floorplanDrawing;
@@ -118,12 +178,7 @@ export const genBuilding = async (
 
   // gettting the rooms is made complicated by an attempt to limit repeat reooms, currently this is not done between floors
   function getRoomsFromRollResults(rollResults: number[]) {
-    const rooms: {
-      category: string;
-      categoryDescription: string;
-      room: string;
-      roomDescription: string;
-    }[] = [];
+    const rooms: Room[] = [];
 
     function getUniqueCategory(category: RoomCategory) {
       if (!rooms.some((room) => room.category === category.category)) {
@@ -180,11 +235,19 @@ export const genBuilding = async (
   let secondFloor = {};
   if (roomCountSecondFloor) {
     const roomCategoryRollResultsSecondFloor = roll.d6(roomCountSecondFloor);
+    const secondFloorRooms = getRoomsFromRollResults(
+      roomCategoryRollResultsSecondFloor,
+    );
     const secondFloorFloorplan = getFloorPlan(roomCountSecondFloor);
-    const sedondFloorFloorplanDrawing = drawFloorPlan(secondFloorFloorplan);
+    const sedondFloorFloorplanDrawing = drawFloorPlan(
+      secondFloorFloorplan,
+      secondFloorRooms,
+      true,
+      2,
+    );
     secondFloor = {
       secondFloor: {
-        rooms: getRoomsFromRollResults(roomCategoryRollResultsSecondFloor),
+        rooms: secondFloorRooms,
         floorplan: secondFloorFloorplan,
         floorplanDrawing: `
 ${sedondFloorFloorplanDrawing}
@@ -197,7 +260,7 @@ ${sedondFloorFloorplanDrawing}
     rooms,
     floorplan,
     floorplanDrawing: `
-${drawFloorPlan(floorplan)}
+${drawFloorPlan(floorplan, rooms, !!roomCountSecondFloor, 1)}
   `,
     ...secondFloor,
   };

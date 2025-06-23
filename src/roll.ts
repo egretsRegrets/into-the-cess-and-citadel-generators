@@ -29,7 +29,7 @@ function rollDice(numDice = 1, diceSides: number): number[] {
   return rolls;
 }
 
-export default {
+const Roll: Partial<DiceRoller> = {
   d2: (numDice?: number): number[] => rollDice(numDice, 2),
   d3: (numDice?: number): number[] => rollDice(numDice, 3),
   d6: (numDice?: number): number[] => rollDice(numDice, 6),
@@ -37,3 +37,5 @@ export default {
   d50: (numDice?: number): number[] => rollDice(numDice, 50),
   d66: (numDice?: number): number[] => rollDice(numDice, 36),
 };
+
+export default Roll;
