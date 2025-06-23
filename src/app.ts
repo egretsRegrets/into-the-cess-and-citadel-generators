@@ -69,7 +69,7 @@ const genStreet = async () => {
 
 const npc = await genNpc();
 const street = await genStreet();
-const building = await genBuilding(6, 3);
+const building = await genBuilding(6, 4);
 
 console.log("npc:", npc);
 console.log("street:", street);

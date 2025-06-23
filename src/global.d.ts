@@ -12,11 +12,15 @@ interface Room {
   roomDescription: string;
 }
 
+type Floorplan = Array<Array<null | number>>;
+
 interface Building {
   rooms: Room[];
   floorplan: Array<Array<null | number>>;
+  floorplanDrawing: string;
   secondFloor?: {
     rooms: Room[];
-    floorplan: Array<Array<null | number>>;
+    floorplan: Floorplan;
+    floorplanDrawing: string;
   };
 }

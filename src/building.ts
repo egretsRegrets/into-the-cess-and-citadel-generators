@@ -20,13 +20,72 @@ function getRandomInt(min, max) {
   return Math.floor(Math.random() * (maxFloored - minCeiled) + minCeiled); // The maximum is exclusive and the minimum is inclusive
 }
 
-function getFloorPlan(roomCount: number): Array<Array<null | number>> {
+function getFloorPlan(roomCount: number): Floorplan {
   const floorplansForRoomCount = Floorplans[roomCount];
   const floorplan =
     floorplansForRoomCount[
       getRandomInt(0, Object.values(floorplansForRoomCount).length)
     ];
   return floorplan;
+}
+
+function drawFloorPlan(floorplan: Floorplan): string {
+  const hWall = `##########`;
+  const noRoomHSpace = `          `;
+  const vWallSpacer = `        `;
+  const door = `D`;
+  // ##########
+  // #        #
+  // #        #
+  // #        #
+  // ##########
+  let floorplanDrawing = ``;
+  floorplan.forEach((row: (number | null)[], rowI) => {
+    let rowDrawing = ``;
+    // north walls
+    row.forEach((room, roomI) => {
+      const noRoom = room === null;
+      const lastRoom = roomI === row.length - 1;
+      // north wall if no room or if room above and room above is not empty
+      const nonEmtpyRoomAboveCurrentRoom =
+        rowI !== 0 && floorplan[rowI - 1][roomI] !== null;
+      const northWallSegment =
+        !noRoom || nonEmtpyRoomAboveCurrentRoom ? hWall : noRoomHSpace;
+      lastRoom
+        ? (rowDrawing = `${rowDrawing}${northWallSegment}\n`)
+        : (rowDrawing = `${rowDrawing}${northWallSegment}`);
+    });
+    // east and west walls
+    for (let hWallRow = 0; hWallRow < 3; hWallRow++) {
+      row.forEach((room, roomI) => {
+        const noRoom = room === null;
+        const lastRoom = roomI === row.length - 1;
+        if (noRoom) {
+          lastRoom
+            ? (rowDrawing = `${rowDrawing}${noRoomHSpace}\n`)
+            : (rowDrawing = `${rowDrawing}${noRoomHSpace}`);
+        } else {
+          lastRoom
+            ? (rowDrawing = `${rowDrawing}\#${vWallSpacer}\#\n`)
+            : (rowDrawing = `${rowDrawing}\#${vWallSpacer}\#`);
+        }
+      });
+    }
+    // south wall
+    row.forEach((room, roomI) => {
+      const undefinedRoomBelowCurrentRoom =
+        rowI !== floorplan.length - 1 && floorplan[rowI + 1].length - 1 < roomI;
+      if (rowI === floorplan.length - 1 || undefinedRoomBelowCurrentRoom) {
+        const noRoom = room === null;
+        const southWallSegment = !noRoom ? hWall : noRoomHSpace;
+        rowDrawing = `${rowDrawing}${southWallSegment}`;
+      }
+    });
+    // console.log("row drawing: ");
+    // console.log(`${rowDrawing}`);
+    floorplanDrawing = `${floorplanDrawing}${rowDrawing}`;
+  });
+  return floorplanDrawing;
 }
 
 export const genBuilding = async (
@@ -107,10 +166,15 @@ export const genBuilding = async (
   let secondFloor = {};
   if (roomCountSecondFloor) {
     const roomCategoryRollResultsSecondFloor = roll.d6(roomCountSecondFloor);
+    const secondFloorFloorplan = getFloorPlan(roomCountSecondFloor);
+    const sedondFloorFloorplanDrawing = drawFloorPlan(secondFloorFloorplan);
     secondFloor = {
       secondFloor: {
         rooms: getRoomsFromRollResults(roomCategoryRollResultsSecondFloor),
-        floorplan: getFloorPlan(roomCountSecondFloor),
+        floorplan: secondFloorFloorplan,
+        floorplanDrawing: `
+${sedondFloorFloorplanDrawing}
+      `,
       },
     };
   }
@@ -118,6 +182,9 @@ export const genBuilding = async (
   return {
     rooms,
     floorplan,
+    floorplanDrawing: `
+${drawFloorPlan(floorplan)}
+  `,
     ...secondFloor,
   };
 };
