@@ -26,14 +26,16 @@ function getFloorPlan(roomCount: number): Floorplan {
     floorplansForRoomCount[
       getRandomInt(0, Object.values(floorplansForRoomCount).length)
     ];
+  // const floorplan = floorplansForRoomCount[7];
   return floorplan;
 }
 
 function drawFloorPlan(floorplan: Floorplan): string {
-  const hWall = `##########`;
-  const noRoomHSpace = `          `;
+  const hWall = `#########`;
+  const noRoomHSpace = `         `;
   const vWallSpacer = `        `;
   const door = `D`;
+  const hWallWithDoor = `####${door}####`;
   // ##########
   // #        #
   // #        #
@@ -49,11 +51,21 @@ function drawFloorPlan(floorplan: Floorplan): string {
       // north wall if no room or if room above and room above is not empty
       const nonEmtpyRoomAboveCurrentRoom =
         rowI !== 0 && floorplan[rowI - 1][roomI] !== null;
-      const northWallSegment =
-        !noRoom || nonEmtpyRoomAboveCurrentRoom ? hWall : noRoomHSpace;
+      const hasNorthWall = !noRoom || nonEmtpyRoomAboveCurrentRoom;
+      const northWallHasDoor = !noRoom && nonEmtpyRoomAboveCurrentRoom;
+      let northWallSegment;
+      if (northWallHasDoor) {
+        northWallSegment = hWallWithDoor;
+      } else if (hasNorthWall) {
+        northWallSegment = hWall;
+      } else {
+        northWallSegment = noRoomHSpace;
+      }
+      const drawNorthWestWallCorner =
+        !noRoom && (roomI === 0 || row[roomI - 1] === null);
       lastRoom
-        ? (rowDrawing = `${rowDrawing}${northWallSegment}\n`)
-        : (rowDrawing = `${rowDrawing}${northWallSegment}`);
+        ? (rowDrawing = `${rowDrawing}${drawNorthWestWallCorner ? "#" : ""}${northWallSegment}\n`)
+        : (rowDrawing = `${rowDrawing}${drawNorthWestWallCorner ? "#" : ""}${northWallSegment}`);
     });
     // east and west walls
     for (let hWallRow = 0; hWallRow < 3; hWallRow++) {
@@ -65,22 +77,24 @@ function drawFloorPlan(floorplan: Floorplan): string {
             ? (rowDrawing = `${rowDrawing}${noRoomHSpace}\n`)
             : (rowDrawing = `${rowDrawing}${noRoomHSpace}`);
         } else {
+          const drawDoor = hWallRow === 1 && typeof row[roomI + 1] === "number";
+          const drawWestWall = roomI === 0 || row[roomI - 1] === null;
           lastRoom
-            ? (rowDrawing = `${rowDrawing}\#${vWallSpacer}\#\n`)
-            : (rowDrawing = `${rowDrawing}\#${vWallSpacer}\#`);
+            ? (rowDrawing = `${rowDrawing}${drawWestWall ? "#" : ""}${vWallSpacer}\#\n`)
+            : (rowDrawing = `${rowDrawing}${drawWestWall ? "#" : ""}${vWallSpacer}${drawDoor ? door : "#"}`);
         }
       });
     }
     // south wall
-    row.forEach((room, roomI) => {
-      const undefinedRoomBelowCurrentRoom =
-        rowI !== floorplan.length - 1 && floorplan[rowI + 1].length - 1 < roomI;
-      if (rowI === floorplan.length - 1 || undefinedRoomBelowCurrentRoom) {
+    if (rowI === floorplan.length - 1) {
+      row.forEach((room, roomI) => {
         const noRoom = room === null;
         const southWallSegment = !noRoom ? hWall : noRoomHSpace;
-        rowDrawing = `${rowDrawing}${southWallSegment}`;
-      }
-    });
+        const drawSouthWestWallCorner =
+          (!noRoom && roomI === 0) || (!noRoom && row[roomI - 1] === null);
+        rowDrawing = `${rowDrawing}${drawSouthWestWallCorner ? "#" : ""}${southWallSegment}`;
+      });
+    }
     // console.log("row drawing: ");
     // console.log(`${rowDrawing}`);
     floorplanDrawing = `${floorplanDrawing}${rowDrawing}`;
