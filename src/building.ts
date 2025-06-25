@@ -168,100 +168,110 @@ export const genBuilding = async (
 ): Promise<Building> => {
   const roomCategoryRollResultsFirstFloor = roll.d6(roomCountFirstFloor);
   const floorplan = getFloorPlan(roomCountFirstFloor);
+  try {
+    const buildingContents = await fs.readFile(
+      path.join(__copyright, "building.json"),
+      { encoding: "utf-8" },
+    );
+    const { roomCategories }: { roomCategories: RoomCategory[] } =
+      JSON.parse(buildingContents);
 
-  const buildingContents = await fs.readFile(
-    path.join(__copyright, "building.json"),
-    { encoding: "utf-8" },
-  );
-  const { roomCategories }: { roomCategories: RoomCategory[] } =
-    JSON.parse(buildingContents);
+    // gettting the rooms is made complicated by an attempt to limit repeat reooms, currently this is not done between floors
+    function getRoomsFromRollResults(rollResults: number[]) {
+      const rooms: Room[] = [];
 
-  // gettting the rooms is made complicated by an attempt to limit repeat reooms, currently this is not done between floors
-  function getRoomsFromRollResults(rollResults: number[]) {
-    const rooms: Room[] = [];
-
-    function getUniqueCategory(category: RoomCategory) {
-      if (!rooms.some((room) => room.category === category.category)) {
-        return category;
+      function getUniqueCategory(category: RoomCategory) {
+        if (!rooms.some((room) => room.category === category.category)) {
+          return category;
+        }
+        return getUniqueCategory(roomCategories[roll.d6()[0]]);
       }
-      return getUniqueCategory(roomCategories[roll.d6()[0]]);
-    }
-    function getUniqueRoom(roomName: string, categoryName: string) {
-      const roomCategory = roomCategories.find(
-        (roomCategory) => roomCategory.category === categoryName,
-      );
-      if (!rooms.some((room) => room.room === roomName)) {
-        return roomCategory.rooms.find((room) => room.name === roomName);
-      }
-      return getUniqueRoom(
-        roomCategory.rooms[
-          roomCategory.rooms.length === 3 ? roll.d3()[0] : roll.d2()[0]
-        ].name,
-        categoryName,
-      );
-    }
-
-    rollResults.forEach((rollResult: number) => {
-      let roomCategory: RoomCategory = roomCategories[rollResult];
-      const otherRoomsWithSameCategory = rooms.filter(
-        (existingRoom) => existingRoom.category === roomCategory.category,
-      );
-      if (otherRoomsWithSameCategory.length === roomCategory.rooms.length) {
-        roomCategory = getUniqueCategory(roomCategory);
+      function getUniqueRoom(roomName: string, categoryName: string) {
+        const roomCategory = roomCategories.find(
+          (roomCategory) => roomCategory.category === categoryName,
+        );
+        if (!rooms.some((room) => room.room === roomName)) {
+          return roomCategory.rooms.find((room) => room.name === roomName);
+        }
+        return getUniqueRoom(
+          roomCategory.rooms[
+            roomCategory.rooms.length === 3 ? roll.d3()[0] : roll.d2()[0]
+          ].name,
+          categoryName,
+        );
       }
 
-      const room = getUniqueRoom(
-        roomCategory.rooms[
-          roomCategory.rooms.length === 3 ? roll.d3()[0] : roll.d2()[0]
-        ].name,
-        roomCategory.category,
-      );
+      rollResults.forEach((rollResult: number) => {
+        let roomCategory: RoomCategory = roomCategories[rollResult];
+        const otherRoomsWithSameCategory = rooms.filter(
+          (existingRoom) => existingRoom.category === roomCategory.category,
+        );
+        if (otherRoomsWithSameCategory.length === roomCategory.rooms.length) {
+          roomCategory = getUniqueCategory(roomCategory);
+        }
 
-      rooms.push({
-        category: roomCategory.category,
-        categoryDescription: roomCategory.description,
-        room: room.name,
-        roomDescription: room.description,
+        const room = getUniqueRoom(
+          roomCategory.rooms[
+            roomCategory.rooms.length === 3 ? roll.d3()[0] : roll.d2()[0]
+          ].name,
+          roomCategory.category,
+        );
+
+        rooms.push({
+          category: roomCategory.category,
+          categoryDescription: roomCategory.description,
+          room: room.name,
+          roomDescription: room.description,
+        });
       });
-    });
 
-    return rooms;
-  }
+      return rooms;
+    }
 
-  const rooms: Room[] = getRoomsFromRollResults(
-    roomCategoryRollResultsFirstFloor,
-  );
-
-  let secondFloor = {};
-  if (roomCountSecondFloor) {
-    const roomCategoryRollResultsSecondFloor = roll.d6(roomCountSecondFloor);
-    const secondFloorRooms = getRoomsFromRollResults(
-      roomCategoryRollResultsSecondFloor,
+    const rooms: Room[] = getRoomsFromRollResults(
+      roomCategoryRollResultsFirstFloor,
     );
-    const secondFloorFloorplan = getFloorPlan(roomCountSecondFloor);
-    const sedondFloorFloorplanDrawing = drawFloorPlan(
-      secondFloorFloorplan,
-      secondFloorRooms,
-      true,
-      2,
-    );
-    secondFloor = {
-      secondFloor: {
-        rooms: secondFloorRooms,
-        floorplan: secondFloorFloorplan,
-        floorplanDrawing: `
+
+    let secondFloor = {};
+    if (roomCountSecondFloor) {
+      const roomCategoryRollResultsSecondFloor = roll.d6(roomCountSecondFloor);
+      const secondFloorRooms = getRoomsFromRollResults(
+        roomCategoryRollResultsSecondFloor,
+      );
+      const secondFloorFloorplan = getFloorPlan(roomCountSecondFloor);
+      const sedondFloorFloorplanDrawing = drawFloorPlan(
+        secondFloorFloorplan,
+        secondFloorRooms,
+        true,
+        2,
+      );
+
+      // console.log(`${sedondFloorFloorplanDrawing}`);
+
+      secondFloor = {
+        secondFloor: {
+          rooms: secondFloorRooms,
+          floorplan: secondFloorFloorplan,
+          floorplanDrawing: `
 ${sedondFloorFloorplanDrawing}
       `,
-      },
-    };
-  }
+        },
+      };
+    }
 
-  return {
-    rooms,
-    floorplan,
-    floorplanDrawing: `
+    // console.log(
+    //   `${drawFloorPlan(floorplan, rooms, !!roomCountSecondFloor, 1)}`,
+    // );
+
+    return {
+      rooms,
+      floorplan,
+      floorplanDrawing: `
 ${drawFloorPlan(floorplan, rooms, !!roomCountSecondFloor, 1)}
   `,
-    ...secondFloor,
-  };
+      ...secondFloor,
+    };
+  } catch (err) {
+    console.error(err);
+  }
 };

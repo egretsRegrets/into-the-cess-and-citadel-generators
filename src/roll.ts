@@ -36,6 +36,7 @@ const Roll: Partial<DiceRoller> = {
   d20: (numDice?: number): number[] => rollDice(numDice, 20),
   d50: (numDice?: number): number[] => rollDice(numDice, 50),
   d66: (numDice?: number): number[] => rollDice(numDice, 36),
+  d100: (numDice?: number): number[] => rollDice(numDice, 100),
 };
 
 export default Roll;

@@ -58,3 +58,27 @@ interface Building {
     floorplanDrawing: string;
   };
 }
+
+// point of interest
+type POIInteraction =
+  | "monster"
+  | "hazard / hazardous POI"
+  | "POI"
+  | "shelter/shop";
+
+interface PointOfInterest {
+  interaction: POIInteraction;
+  sparks: [string, string, string];
+  building: {
+    type: string;
+    description: string;
+  };
+}
+
+// district
+type POIPlacementGuide = Array<Array<Array<undefined | number>>>;
+
+interface District {
+  placementGuide: POIPlacementGuide;
+  POIs: { [POIKey: string]: PointOfInterest };
+}
