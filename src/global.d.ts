@@ -44,6 +44,24 @@ interface Npc extends NpcNameProfession {
   quirk: any;
 }
 
+// sparks from Mythic Bastionland
+interface MbSparkNpc {
+  appearance: { physique: string; dress: string };
+  task: { action: string; subject: string };
+  voice: { tone: string; manner: string };
+  background: { upbringing: string; memory: string };
+  ailment: { descriptor: string; symptom: string };
+  heraldry: { palette: string; symbol: string };
+  relationship: { state: string; connection: string };
+  desire: { ambition: string; motive: string };
+}
+
+interface MbSparkCiv {
+  drama: { theme: string; detail: string };
+  woe: { description: string; incident: string };
+  news: { subject: string; mood: string };
+}
+
 // building
 interface Room {
   category: string;

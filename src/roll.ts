@@ -21,7 +21,7 @@ function rollDiceBySides(diceSides: number): number {
   return roll;
 }
 
-function rollDice(numDice = 1, diceSides: number): number[] {
+function rollDice(numDice: number, diceSides: number): number[] {
   let rolls: number[] = [];
   for (let i = 0; i < numDice; i++) {
     rolls.push(rollDiceBySides(diceSides));
@@ -30,16 +30,17 @@ function rollDice(numDice = 1, diceSides: number): number[] {
 }
 
 const Roll: Partial<DiceRoller> = {
-  d2: (numDice?: number): number[] => rollDice(numDice, 2),
-  d3: (numDice?: number): number[] => rollDice(numDice, 3),
-  d4: (numDice?: number): number[] => rollDice(numDice, 4),
-  d6: (numDice?: number): number[] => rollDice(numDice, 6),
-  d8: (numDice?: number): number[] => rollDice(numDice, 8),
-  d10: (numDice?: number): number[] => rollDice(numDice, 10),
-  d20: (numDice?: number): number[] => rollDice(numDice, 20),
-  d50: (numDice?: number): number[] => rollDice(numDice, 50),
-  d66: (numDice?: number): number[] => rollDice(numDice, 36),
-  d100: (numDice?: number): number[] => rollDice(numDice, 100),
+  d2: (numDice: number = 1): number[] => rollDice(numDice, 2),
+  d3: (numDice: number = 1): number[] => rollDice(numDice, 3),
+  d4: (numDice: number = 1): number[] => rollDice(numDice, 4),
+  d6: (numDice: number = 1): number[] => rollDice(numDice, 6),
+  d8: (numDice: number = 1): number[] => rollDice(numDice, 8),
+  d10: (numDice: number = 1): number[] => rollDice(numDice, 10),
+  d12: (numDice: number = 1): number[] => rollDice(numDice, 12),
+  d20: (numDice: number = 1): number[] => rollDice(numDice, 20),
+  d50: (numDice: number = 1): number[] => rollDice(numDice, 50),
+  d66: (numDice: number = 1): number[] => rollDice(numDice, 36),
+  d100: (numDice: number = 1): number[] => rollDice(numDice, 100),
 };
 
 export default Roll;

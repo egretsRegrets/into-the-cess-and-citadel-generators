@@ -6,8 +6,23 @@ import { genDistrict } from "./district";
 import { genNpc } from "./npc";
 import { genStreet } from "./street";
 import { genPOIs } from "./pointOfInterest";
+import { genMbSparkNpc, genMbSparkCiv } from "./mb-sparks";
 
 const generable = {
+  "spark-civ": {
+    process: async (callback: () => any) => {
+      const sparkCiv = await genMbSparkCiv();
+      console.log(sparkCiv);
+      callback();
+    },
+  },
+  "spark-npc": {
+    process: async (callback: () => any) => {
+      const sparkNpc = await genMbSparkNpc();
+      console.log(sparkNpc);
+      callback();
+    },
+  },
   npc: {
     process: async (callback: () => any) => {
       const npc = await genNpc();
