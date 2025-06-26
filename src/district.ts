@@ -87,7 +87,18 @@ const writeDistrictMd = async ({
   POIs,
 }: District) => {
   try {
-    const keydLocationsMD = Object.entries(POIs).reduce(
+    const legiblePlacementGuide = placementGuide.reduce(
+      (guideString: string, row) => {
+        const rowString = row.reduce(
+          (rowStr: string, cell) =>
+            `${rowStr}${typeof cell[0] === "number" ? cell[0].toString().concat(" ") : "# "}`,
+          "",
+        );
+        return `${guideString}\n    ${rowString}`;
+      },
+      "",
+    );
+    const keydLocations = Object.entries(POIs).reduce(
       (accString, [poiKey, { interaction, sparks, building }]) => `
 ${accString}
 #### ${poiKey}
@@ -118,9 +129,9 @@ ${street.description}
 - ${npc.manners}
 - ${npc.quirk}
 ## Map
-\`${placementGuide}\`
+${legiblePlacementGuide}
 ### Keyed Locations
-${keydLocationsMD}
+${keydLocations}
 `;
     await fs.writeFile(path.join(__temp, "district-gen.md"), content);
   } catch (err) {
