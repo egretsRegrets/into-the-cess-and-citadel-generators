@@ -38,6 +38,12 @@ interface NpcNameProfession {
   profession: string;
 }
 
+interface Npc extends NpcNameProfession {
+  appearance: any;
+  manners: any;
+  quirk: any;
+}
+
 // building
 interface Room {
   category: string;
@@ -76,9 +82,25 @@ interface PointOfInterest {
 }
 
 // district
+type Wealth = "common" | "middling" | "rich" | "opulent";
 type POIPlacementGuide = Array<Array<Array<undefined | number>>>;
 
 interface District {
+  wealth: Wealth;
+  feature: {
+    feature: string;
+    description: string;
+  };
+  issue: {
+    issue: string;
+    description: string;
+  };
+  touchstone: string;
   placementGuide: POIPlacementGuide;
   POIs: { [POIKey: string]: PointOfInterest };
+  npc: Npc;
+  street: {
+    name: string;
+    description: string;
+  };
 }

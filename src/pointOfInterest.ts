@@ -41,9 +41,10 @@ export const genPOIs = async (
   try {
     let POIs = [];
     const sparksContents = await fs.readFile(
-      path.join(__copyright, "sparks.json"),
+      path.join(__copyright, "eb-sparks.json"),
       { encoding: "utf-8" },
     );
+    const { bastion, deepCountry, underground } = JSON.parse(sparksContents);
     const MIRBuildingContents = await fs.readFile(
       path.join(__copyright, "MIR-building.json"),
       { encoding: "utf-8" },
@@ -54,10 +55,9 @@ export const genPOIs = async (
       let sparks: [string, string, string];
       let building: { type: string; description: string };
 
-      const ebSparks: EbSparks = JSON.parse(sparksContents);
-      sparks = Object.values(ebSparks).reduce(
-        (sparks, sparkTable: [string[], string[]]) => [
-          ...sparks,
+      sparks = [bastion, deepCountry, underground].reduce(
+        (sparksAcc, sparkTable: [string[], string[]]) => [
+          ...sparksAcc,
           `${sparkTable[0][roll.d20()[0]]} ${sparkTable[1][roll.d20()[0]]}`,
         ],
         [],

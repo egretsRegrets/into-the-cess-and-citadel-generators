@@ -1,12 +1,33 @@
+import * as fs from "node:fs/promises";
+import path, { dirname } from "node:path";
+import { fileURLToPath } from "node:url";
 import { genPOIs } from "./pointOfInterest";
-const pointsOfInterest = await genPOIs();
-console.log("point of interest: ", pointsOfInterest);
+import roll from "./roll";
+import { genNpc } from "./npc";
+import { genStreet } from "./street";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+const __copyright = path.join(__dirname, "../copyright");
+
+type d10ByWealth = {
+  [key in Wealth]: string[];
+};
+
+interface DistrictContents {
+  d10Issues: d10ByWealth;
+  d10Features: d10ByWealth;
+  features: { feature: string; description: string }[];
+  issues: { issue: string; description: string }[];
+}
 
 function getRandomInt(min, max) {
   const minCeiled = Math.ceil(min);
   const maxFloored = Math.floor(max);
   return Math.floor(Math.random() * (maxFloored - minCeiled) + minCeiled); // The maximum is exclusive and the minimum is inclusive
 }
+
+// feature, issues, street detail, Sparks (additional sparks from other sources), NPCs from Magical Industrial Revolution
 
 function getPlacementGuide(numPOIs: number): POIPlacementGuide {
   function getPlacementInterface() {
@@ -54,17 +75,54 @@ function getPlacementGuide(numPOIs: number): POIPlacementGuide {
   return placementGuide;
 }
 
-export const genDistrict = async (numPOIs: number): Promise<District> => {
-  const placementGuide = getPlacementGuide(numPOIs);
-  const POIs = (await genPOIs(numPOIs)).reduce(
-    (keydPOIs, POI, POII) => ({
-      ...keydPOIs,
-      [POII + 1]: POI,
-    }),
-    {},
-  );
-  return {
-    POIs,
-    placementGuide,
-  };
+export const genDistrict = async (
+  numPOIs: number,
+  wealth: Wealth = "common",
+): Promise<District> => {
+  try {
+    const placementGuide = getPlacementGuide(numPOIs);
+
+    const districtContents = await fs.readFile(
+      path.join(__copyright, "district.json"),
+      { encoding: "utf-8" },
+    );
+    const { d10Features, d10Issues, features, issues }: DistrictContents =
+      JSON.parse(districtContents);
+
+    const featureName = d10Features[wealth][roll.d10()[0]];
+    const feature = features.find((feature) => feature.feature === featureName);
+    const issueName = d10Issues[wealth][roll.d10()[0]];
+    const issue = issues.find((issue) => issue.issue === issueName);
+
+    const sparkContents = await fs.readFile(
+      path.join(__copyright, "eb-sparks.json"),
+      { encoding: "utf-8" },
+    );
+
+    const { touchstones } = JSON.parse(sparkContents);
+    const touchstone = Object.values(touchstones)[roll.d8()[0]][roll.d4()[0]];
+
+    const POIs = (await genPOIs(numPOIs)).reduce(
+      (keydPOIs, POI, POII) => ({
+        ...keydPOIs,
+        [POII + 1]: POI,
+      }),
+      {},
+    );
+
+    const npc = await genNpc();
+    const street = await genStreet();
+    return {
+      wealth,
+      feature,
+      issue,
+      touchstone,
+      npc,
+      street,
+      POIs,
+      placementGuide,
+    };
+  } catch (err) {
+    console.error(err);
+  }
 };
