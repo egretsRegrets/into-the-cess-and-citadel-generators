@@ -96,11 +96,11 @@ interface District {
     description: string;
   };
   touchstone: string;
-  placementGuide: POIPlacementGuide;
-  POIs: { [POIKey: string]: PointOfInterest };
-  npc: Npc;
   street: {
     name: string;
     description: string;
   };
+  npc: Npc;
+  POIs: { [POIKey: string]: PointOfInterest };
+  placementGuide: POIPlacementGuide;
 }

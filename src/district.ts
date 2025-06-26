@@ -9,6 +9,7 @@ import { genStreet } from "./street";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 const __copyright = path.join(__dirname, "../copyright");
+const __temp = path.join(__dirname, "../temp");
 
 type d10ByWealth = {
   [key in Wealth]: string[];
@@ -75,6 +76,58 @@ function getPlacementGuide(numPOIs: number): POIPlacementGuide {
   return placementGuide;
 }
 
+const writeDistrictMd = async ({
+  wealth,
+  feature,
+  issue,
+  touchstone,
+  street,
+  npc,
+  placementGuide,
+  POIs,
+}: District) => {
+  try {
+    const keydLocationsMD = Object.entries(POIs).reduce(
+      (accString, [poiKey, { interaction, sparks, building }]) => `
+${accString}
+#### ${poiKey}
+**${interaction}**
+*(${sparks.join(", ")})*
+${building.type}
+${building.description}
+`,
+      "",
+    );
+    const content = `
+## Wealth
+${wealth}
+## Feature
+**${feature.feature}**
+${feature.description}
+## Issue
+**${issue.issue}**
+${issue.description}
+## Touchstone
+${touchstone}
+## Street Detail
+**${street.name}**
+${street.description}
+## Notable NPC
+**${npc.name}**
+- ${npc.appearance}
+- ${npc.manners}
+- ${npc.quirk}
+## Map
+\`${placementGuide}\`
+### Keyed Locations
+${keydLocationsMD}
+`;
+    await fs.writeFile(path.join(__temp, "district-gen.md"), content);
+  } catch (err) {
+    console.error(err);
+  }
+};
+
 export const genDistrict = async (
   numPOIs: number,
   wealth: Wealth = "common",
@@ -112,7 +165,7 @@ export const genDistrict = async (
 
     const npc = await genNpc();
     const street = await genStreet();
-    return {
+    const district = {
       wealth,
       feature,
       issue,
@@ -122,6 +175,8 @@ export const genDistrict = async (
       POIs,
       placementGuide,
     };
+    writeDistrictMd(district);
+    return district;
   } catch (err) {
     console.error(err);
   }
