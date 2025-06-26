@@ -99,14 +99,14 @@ const writeDistrictMd = async ({
       "",
     );
     const keydLocations = Object.entries(POIs).reduce(
-      (accString, [poiKey, { interaction, sparks, building }]) => `
-${accString}
+      (accString, [poiKey, { interaction, sparks, building }]) =>
+        accString.concat(`
 #### ${poiKey}
 **${interaction}**
 *(${sparks.join(", ")})*
 ${building.type}
 ${building.description}
-`,
+`),
       "",
     );
     const content = `
@@ -154,7 +154,14 @@ export const genDistrict = async (
       JSON.parse(districtContents);
 
     const featureName = d10Features[wealth][roll.d10()[0]];
-    const feature = features.find((feature) => feature.feature === featureName);
+    const feature = features.find((feature) => {
+      if (featureName === "Vast Market / Revelry Quarters") {
+        return (feature.feature = getRandomInt(0, 2)
+          ? "Vast Market"
+          : "Revelry Quarters");
+      }
+      return feature.feature === featureName;
+    });
     const issueName = d10Issues[wealth][roll.d10()[0]];
     const issue = issues.find((issue) => issue.issue === issueName);
 
