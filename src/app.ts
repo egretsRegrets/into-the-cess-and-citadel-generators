@@ -7,6 +7,7 @@ import { genNpc } from "./npc";
 import { genStreet } from "./street";
 import { genPOIs } from "./pointOfInterest";
 import { genMbSparkNpc, genMbSparkCiv } from "./mb-sparks";
+import { genAdventureSite } from "./adventure-site";
 
 const generable = {
   "spark-civ": {
@@ -54,15 +55,11 @@ const generable = {
   district: {
     process: async (callback: () => any) => {
       const params = await rl.question(
-        "gimme: [number of POIs, wealth (common, middling, rich, opulent)]  ",
+        "gimme: number of POIs, wealth (common, middling, rich, opulent)  ",
       );
       rl.prompt();
-      const numPOIs = +params
-        .split(",")[0]
-        .replace("[", "")
-        .replace(",", "")
-        .trim();
-      const wealth = params.split(",")[1].replace("]", "").trim() as Wealth;
+      const numPOIs = +params.split(",")[0].replace(",", "").trim();
+      const wealth = params.split(",")[1].trim() as Wealth;
       // const [numPOIsString, wealth] = JSON.parse(params);
       const district = await genDistrict(numPOIs, wealth);
       console.log(
@@ -76,6 +73,15 @@ const generable = {
     process: async (callback: () => any) => {
       const POI = await genPOIs();
       console.log(POI);
+      callback();
+    },
+  },
+  "adventure-site": {
+    process: async (callback: () => any) => {
+      const params = await rl.question("gimme: number of nodes in the site ");
+      rl.prompt();
+      const adventureSite = await genAdventureSite(+params);
+      console.log(adventureSite);
       callback();
     },
   },

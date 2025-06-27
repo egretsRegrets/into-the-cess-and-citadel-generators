@@ -5,6 +5,7 @@ import { genPOIs } from "./pointOfInterest";
 import roll from "./roll";
 import { genNpc } from "./npc";
 import { genStreet } from "./street";
+import { genMbSparkNpc, genMbSparkCiv } from "./mb-sparks";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -80,13 +81,32 @@ const writeDistrictMd = async ({
   wealth,
   feature,
   issue,
-  touchstone,
   street,
+  touchstone,
+  sparks,
   npc,
+  personage,
   placementGuide,
   POIs,
 }: District) => {
   try {
+    const tableFromMbSparks = (
+      derivedSparks: MbSparkCiv | MbSparkNpc,
+    ): string => {
+      let markdown = "";
+      for (const category in derivedSparks) {
+        const heading = `##### ${category.substring(0, 1).toLocaleUpperCase()}${category.substring(1)}`;
+        const [[col1Name, col1Val], [col2Name, col2Val]] = Object.entries(
+          derivedSparks[category],
+        );
+        const tableMd = `| ${col1Name} | ${col2Name} |\n`
+          .concat(`| --- | --- |\n`)
+          .concat(`| ${col1Val} | ${col2Val} |`);
+        const catMd = heading.concat("\n").concat(tableMd);
+        markdown = markdown.concat("\n").concat(catMd);
+      }
+      return markdown;
+    };
     const legiblePlacementGuide = placementGuide.reduce(
       (guideString: string, row) => {
         const rowString = row.reduce(
@@ -118,16 +138,20 @@ ${feature.description}
 ## Issue
 **${issue.issue}**
 ${issue.description}
-## Touchstone
-${touchstone}
 ## Street Detail
 **${street.name}**
 ${street.description}
+## Touchstone
+${touchstone}
+## Sparks
+${tableFromMbSparks(sparks)}
 ## Notable NPC
 **${npc.name}**
 - ${npc.appearance}
 - ${npc.manners}
 - ${npc.quirk}
+## Personage
+${tableFromMbSparks(personage)}
 ## Map
 ${legiblePlacementGuide}
 ### Keyed Locations
@@ -183,13 +207,17 @@ export const genDistrict = async (
 
     const npc = await genNpc();
     const street = await genStreet();
+    const sparks = await genMbSparkCiv();
+    const personage = await genMbSparkNpc();
     const district = {
       wealth,
       feature,
       issue,
-      touchstone,
-      npc,
       street,
+      touchstone,
+      sparks,
+      npc,
+      personage,
       POIs,
       placementGuide,
     };

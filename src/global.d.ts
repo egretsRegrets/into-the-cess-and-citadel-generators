@@ -60,6 +60,23 @@ interface MbSparkCiv {
   drama: { theme: string; detail: string };
   woe: { description: string; incident: string };
   news: { subject: string; mood: string };
+  bailey: { style: string; feature: string };
+  keep: { centrepiece: string; decoration: string };
+  holding: { style: string; feature: string };
+  luxuries: { rarity: string; type: string };
+  goods: { theme: string; type: string };
+  food: { quality: string; type: string };
+}
+
+// adventure site
+type ASNodeInteraction = "feature" | "danger" | "treasure";
+
+interface ASNode {
+  interaction: ASNodeInteraction;
+}
+
+interface AdventureSite {
+  nodes: ASNode[];
 }
 
 // building
@@ -113,12 +130,14 @@ interface District {
     issue: string;
     description: string;
   };
-  touchstone: string;
   street: {
     name: string;
     description: string;
   };
+  touchstone: string;
+  sparks: MbSparkCiv;
   npc: Npc;
+  personage: MbSparkNpc;
   POIs: { [POIKey: string]: PointOfInterest };
   placementGuide: POIPlacementGuide;
 }
