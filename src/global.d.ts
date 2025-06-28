@@ -114,6 +114,7 @@ interface PointOfInterest {
     type: string;
     description: string;
   };
+  altStructure: string;
 }
 
 // district
@@ -130,14 +131,17 @@ interface District {
     issue: string;
     description: string;
   };
-  street: {
-    name: string;
-    description: string;
+  atmosphere: {
+    // into the cess and citadel street description
+    street: string;
+    // hillgrab pictoral + text oracle
+    oracle: {
+      imagePath: string;
+      modifier: string;
+    };
+    //
+    civSparks: Partial<MbSparkCiv>;
   };
-  touchstone: string;
-  sparks: MbSparkCiv;
-  npc: Npc;
-  personage: MbSparkNpc;
-  POIs: { [POIKey: string]: PointOfInterest };
   placementGuide: POIPlacementGuide;
+  POIs: { [POIKey: string]: PointOfInterest };
 }

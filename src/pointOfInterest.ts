@@ -39,7 +39,7 @@ export const genPOIs = async (
   numOfPOIs: number = 1,
 ): Promise<PointOfInterest[]> => {
   try {
-    let POIs = [];
+    let POIs: PointOfInterest[] = [];
     const sparksContents = await fs.readFile(
       path.join(__copyright, "eb-sparks.json"),
       { encoding: "utf-8" },
@@ -48,6 +48,11 @@ export const genPOIs = async (
     const MIRBuildingContents = await fs.readFile(
       path.join(__copyright, "MIR-building.json"),
       { encoding: "utf-8" },
+    );
+    const structureContents = JSON.parse(
+      await fs.readFile(path.join(__copyright, "windwraith-structures.json"), {
+        encoding: "utf-8",
+      }),
     );
 
     for (let POII = 0; POII < numOfPOIs; POII++) {
@@ -67,10 +72,12 @@ export const genPOIs = async (
         JSON.parse(MIRBuildingContents);
       const { buildingType: type, description } = buildings[roll.d100()[0]];
       building = { type, description };
+      const structure = structureContents[roll.d3()[0]][roll.d20()[0]];
       POIs.push({
         interaction,
         sparks,
         building,
+        altStructure: structure,
       });
     }
 

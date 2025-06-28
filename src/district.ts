@@ -6,6 +6,7 @@ import roll from "./roll";
 import { genNpc } from "./npc";
 import { genStreet } from "./street";
 import { genMbSparkNpc, genMbSparkCiv } from "./mb-sparks";
+import { genHillgraabOracle } from "./hillgraabOracle";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -81,17 +82,13 @@ const writeDistrictMd = async ({
   wealth,
   feature,
   issue,
-  street,
-  touchstone,
-  sparks,
-  npc,
-  personage,
+  atmosphere,
   placementGuide,
   POIs,
 }: District) => {
   try {
     const tableFromMbSparks = (
-      derivedSparks: MbSparkCiv | MbSparkNpc,
+      derivedSparks: Partial<MbSparkCiv> | MbSparkNpc,
     ): string => {
       let markdown = "";
       for (const category in derivedSparks) {
@@ -119,13 +116,14 @@ const writeDistrictMd = async ({
       "",
     );
     const keydLocations = Object.entries(POIs).reduce(
-      (accString, [poiKey, { interaction, sparks, building }]) =>
+      (accString, [poiKey, { interaction, sparks, building, altStructure }]) =>
         accString.concat(`
 #### ${poiKey}
 **${interaction}**
 *(${sparks.join(", ")})*
 ${building.type}
 ${building.description}
+or maybe: ${altStructure}
 `),
       "",
     );
@@ -138,20 +136,14 @@ ${feature.description}
 ## Issue
 **${issue.issue}**
 ${issue.description}
-## Street Detail
-**${street.name}**
-${street.description}
-## Touchstone
-${touchstone}
-## Sparks
-${tableFromMbSparks(sparks)}
-## Notable NPC
-**${npc.name}**
-- ${npc.appearance}
-- ${npc.manners}
-- ${npc.quirk}
-## Personage
-${tableFromMbSparks(personage)}
+## Who's Here
+### Atmosphere
+*${atmosphere.street}*
+#### Oracle says:
+${atmosphere.oracle.modifier}
+![[/media/hillgraab-visual-oracle/${atmosphere.oracle.imagePath.substring(atmosphere.oracle.imagePath.lastIndexOf("/") + 1)}]]
+#### Sparks:
+${tableFromMbSparks(atmosphere.civSparks)}
 ## Map
 ${legiblePlacementGuide}
 ### Keyed Locations
@@ -189,14 +181,6 @@ export const genDistrict = async (
     const issueName = d10Issues[wealth][roll.d10()[0]];
     const issue = issues.find((issue) => issue.issue === issueName);
 
-    const sparkContents = await fs.readFile(
-      path.join(__copyright, "eb-sparks.json"),
-      { encoding: "utf-8" },
-    );
-
-    const { touchstones } = JSON.parse(sparkContents);
-    const touchstone = Object.values(touchstones)[roll.d8()[0]][roll.d4()[0]];
-
     const POIs = (await genPOIs(numPOIs)).reduce(
       (keydPOIs, POI, POII) => ({
         ...keydPOIs,
@@ -205,19 +189,25 @@ export const genDistrict = async (
       {},
     );
 
-    const npc = await genNpc();
-    const street = await genStreet();
-    const sparks = await genMbSparkCiv();
-    const personage = await genMbSparkNpc();
+    const street = (await genStreet()).description;
+    const { drama, woe, news } = await genMbSparkCiv();
+    const hillgraabOracle = await genHillgraabOracle();
     const district = {
       wealth,
       feature,
       issue,
-      street,
-      touchstone,
-      sparks,
-      npc,
-      personage,
+      atmosphere: {
+        street,
+        oracle: {
+          imagePath: hillgraabOracle[1],
+          modifier: hillgraabOracle[0],
+        },
+        civSparks: {
+          drama,
+          woe,
+          news,
+        },
+      },
       POIs,
       placementGuide,
     };
