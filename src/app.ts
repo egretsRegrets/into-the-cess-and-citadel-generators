@@ -8,8 +8,17 @@ import { genStreet } from "./street";
 import { genPOIs } from "./pointOfInterest";
 import { genMbSparkNpc, genMbSparkCiv } from "./mb-sparks";
 import { genAdventureSite } from "./adventure-site";
+import { genHillgraabOracle } from "./hillgraabOracle";
 
 const generable = {
+  "hillgraab-oracle": {
+    process: async (callback: () => any) => {
+      const oracle = await genHillgraabOracle();
+      console.log(oracle[0]);
+      console.log(oracle[1]);
+      callback();
+    },
+  },
   "spark-civ": {
     process: async (callback: () => any) => {
       const sparkCiv = await genMbSparkCiv();
