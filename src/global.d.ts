@@ -90,11 +90,11 @@ interface Room {
 type Floorplan = Array<Array<null | number>>;
 
 interface Building {
-  rooms: Room[];
+  roomInteractions: ASNodeInteraction[];
   floorplan: Array<Array<null | number>>;
   floorplanDrawing: string;
   secondFloor?: {
-    rooms: Room[];
+    roomInteractions: ASNodeInteraction[];
     floorplan: Floorplan;
     floorplanDrawing: string;
   };
